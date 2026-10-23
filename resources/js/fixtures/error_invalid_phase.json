@@ -1,0 +1,14 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Error example: invalid_phase.",
+    "http_status": 409,
+    "response": {
+        "error": {
+            "code": "invalid_phase",
+            "message": "That action is not available right now.",
+            "retryable": false,
+            "correlation_id": "demo-corr-0001"
+        },
+        "server_now": "2026-10-19T10:00:07.000Z"
+    }
+}

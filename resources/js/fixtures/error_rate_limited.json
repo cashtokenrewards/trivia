@@ -1,0 +1,17 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Error example: rate_limited.",
+    "http_status": 429,
+    "response": {
+        "error": {
+            "code": "rate_limited",
+            "message": "Too many requests. Please wait a moment.",
+            "retryable": true,
+            "correlation_id": "demo-corr-0001",
+            "details": {
+                "retry_after_seconds": 5
+            }
+        },
+        "server_now": "2026-10-19T10:00:07.000Z"
+    }
+}

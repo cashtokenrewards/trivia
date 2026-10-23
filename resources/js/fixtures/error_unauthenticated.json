@@ -1,0 +1,14 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Error example: unauthenticated.",
+    "http_status": 401,
+    "response": {
+        "error": {
+            "code": "unauthenticated",
+            "message": "Please sign in to play.",
+            "retryable": false,
+            "correlation_id": "demo-corr-0001"
+        },
+        "server_now": "2026-10-19T10:00:07.000Z"
+    }
+}

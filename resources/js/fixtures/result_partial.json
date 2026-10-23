@@ -1,0 +1,22 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. GET result for the partial session above.",
+    "http_status": 200,
+    "response": {
+        "session_id": "demo_sess_0001",
+        "mode": "competitive",
+        "completion": "partial",
+        "end_reason": "session_expired",
+        "final_score": 300,
+        "correct_count": 2,
+        "rounds_resolved": 3,
+        "bonuses_awarded": 0,
+        "completed_at": "2026-10-19T10:01:30.000Z",
+        "rewards": {
+            "qualification": "not_qualified",
+            "participation": "not_earned",
+            "premium": "not_earned",
+            "provider_mode": "fake"
+        }
+    }
+}

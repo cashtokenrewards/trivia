@@ -1,0 +1,87 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. POST .../box with high_roller: a hard question is issued, lifeline still available.",
+    "http_status": 200,
+    "response": {
+        "session_id": "demo_sess_0001",
+        "mode": "competitive",
+        "status": "active",
+        "phase": "answering",
+        "state_version": 6,
+        "server_now": "2026-10-19T10:00:08.000Z",
+        "session_started_at": "2026-10-19T10:00:00.000Z",
+        "session_expires_at": "2026-10-19T10:01:30.000Z",
+        "phase_deadline": "2026-10-19T10:00:18.000Z",
+        "rules": {
+            "version": "demo-rules-v1",
+            "session_seconds": 90,
+            "choice_seconds": 3,
+            "answer_seconds": 10,
+            "rounds_total": 6,
+            "points": {
+                "easy": 100,
+                "medium": 200,
+                "hard": 300
+            },
+            "streak_every": 3,
+            "streak_bonus": 100,
+            "max_streak_bonuses": 2
+        },
+        "rounds_total": 6,
+        "rounds_resolved": 1,
+        "score": 200,
+        "correct_count": 1,
+        "streak": 1,
+        "bonuses_awarded": 0,
+        "lifeline_available": true,
+        "round": {
+            "round_id": "demo_rnd_02",
+            "ordinal": 2,
+            "status": "answering",
+            "boxes": null,
+            "selected_box_id": "high_roller",
+            "auto_selected": false,
+            "question": {
+                "question_id": "demo_q_hard_01",
+                "category": "Science",
+                "difficulty": "hard",
+                "text": "DEMO: Which element has the atomic number 74?",
+                "options": [
+                    {
+                        "option_id": "demo_opt_h1",
+                        "text": "Osmium"
+                    },
+                    {
+                        "option_id": "demo_opt_h2",
+                        "text": "Titanium"
+                    },
+                    {
+                        "option_id": "demo_opt_h3",
+                        "text": "Tungsten"
+                    },
+                    {
+                        "option_id": "demo_opt_h4",
+                        "text": "Tantalum"
+                    }
+                ],
+                "removed_option_ids": []
+            },
+            "answer_deadline": "2026-10-19T10:00:18.000Z"
+        },
+        "last_result": {
+            "round_id": "demo_rnd_01",
+            "ordinal": 1,
+            "outcome": "correct",
+            "difficulty": "medium",
+            "selected_option_id": "demo_opt_m3",
+            "correct_option_id": "demo_opt_m3",
+            "explanation": "Mars looks red because of iron oxide on its surface. (Demo content.)",
+            "points_awarded": 200,
+            "streak_bonus": 0,
+            "score_after": 200,
+            "streak_after": 1,
+            "resolved_at": "2026-10-19T10:00:06.000Z"
+        },
+        "result": null
+    }
+}

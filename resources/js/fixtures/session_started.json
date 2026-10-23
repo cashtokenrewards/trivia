@@ -1,0 +1,41 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. POST /sessions: session created, clock running, no round open yet.",
+    "http_status": 201,
+    "response": {
+        "session_id": "demo_sess_0001",
+        "mode": "competitive",
+        "status": "active",
+        "phase": "awaiting_round",
+        "state_version": 1,
+        "server_now": "2026-10-19T10:00:00.000Z",
+        "session_started_at": "2026-10-19T10:00:00.000Z",
+        "session_expires_at": "2026-10-19T10:01:30.000Z",
+        "phase_deadline": null,
+        "rules": {
+            "version": "demo-rules-v1",
+            "session_seconds": 90,
+            "choice_seconds": 3,
+            "answer_seconds": 10,
+            "rounds_total": 6,
+            "points": {
+                "easy": 100,
+                "medium": 200,
+                "hard": 300
+            },
+            "streak_every": 3,
+            "streak_bonus": 100,
+            "max_streak_bonuses": 2
+        },
+        "rounds_total": 6,
+        "rounds_resolved": 0,
+        "score": 0,
+        "correct_count": 0,
+        "streak": 0,
+        "bonuses_awarded": 0,
+        "lifeline_available": true,
+        "round": null,
+        "last_result": null,
+        "result": null
+    }
+}
