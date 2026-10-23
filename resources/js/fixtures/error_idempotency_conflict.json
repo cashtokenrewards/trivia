@@ -1,0 +1,14 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Error example: idempotency_conflict.",
+    "http_status": 409,
+    "response": {
+        "error": {
+            "code": "idempotency_conflict",
+            "message": "This request key was already used for a different request.",
+            "retryable": false,
+            "correlation_id": "demo-corr-0001"
+        },
+        "server_now": "2026-10-19T10:00:07.000Z"
+    }
+}

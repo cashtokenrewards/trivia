@@ -1,0 +1,70 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Six resolved rounds: 300+300+300(+100 bonus)+0+300+100 = 1400, five correct. Qualifies for both demo rewards.",
+    "http_status": 200,
+    "response": {
+        "session_id": "demo_sess_0001",
+        "mode": "competitive",
+        "status": "completed",
+        "phase": "completed",
+        "state_version": 19,
+        "server_now": "2026-10-19T10:01:01.000Z",
+        "session_started_at": "2026-10-19T10:00:00.000Z",
+        "session_expires_at": "2026-10-19T10:01:30.000Z",
+        "phase_deadline": null,
+        "rules": {
+            "version": "demo-rules-v1",
+            "session_seconds": 90,
+            "choice_seconds": 3,
+            "answer_seconds": 10,
+            "rounds_total": 6,
+            "points": {
+                "easy": 100,
+                "medium": 200,
+                "hard": 300
+            },
+            "streak_every": 3,
+            "streak_bonus": 100,
+            "max_streak_bonuses": 2
+        },
+        "rounds_total": 6,
+        "rounds_resolved": 6,
+        "score": 1400,
+        "correct_count": 5,
+        "streak": 2,
+        "bonuses_awarded": 1,
+        "lifeline_available": false,
+        "round": null,
+        "last_result": {
+            "round_id": "demo_rnd_06",
+            "ordinal": 6,
+            "outcome": "correct",
+            "difficulty": "easy",
+            "selected_option_id": "demo_opt_e2",
+            "correct_option_id": "demo_opt_e2",
+            "explanation": "A week has seven days. (Demo content, not an approved campaign fact.)",
+            "points_awarded": 100,
+            "streak_bonus": 0,
+            "score_after": 1400,
+            "streak_after": 2,
+            "resolved_at": "2026-10-19T10:01:01.000Z"
+        },
+        "result": {
+            "session_id": "demo_sess_0001",
+            "mode": "competitive",
+            "completion": "completed",
+            "end_reason": "six_rounds",
+            "final_score": 1400,
+            "correct_count": 5,
+            "rounds_resolved": 6,
+            "bonuses_awarded": 1,
+            "completed_at": "2026-10-19T10:01:01.000Z",
+            "rewards": {
+                "qualification": "qualified",
+                "participation": "pending",
+                "premium": "pending",
+                "provider_mode": "fake"
+            }
+        }
+    }
+}

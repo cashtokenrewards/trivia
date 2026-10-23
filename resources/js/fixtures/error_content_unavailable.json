@@ -1,0 +1,14 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Error example: content_unavailable.",
+    "http_status": 503,
+    "response": {
+        "error": {
+            "code": "content_unavailable",
+            "message": "The game is unavailable right now. Please try again later.",
+            "retryable": true,
+            "correlation_id": "demo-corr-0001"
+        },
+        "server_now": "2026-10-19T10:00:07.000Z"
+    }
+}

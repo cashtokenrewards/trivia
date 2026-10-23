@@ -1,0 +1,54 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. POST .../answer: round 2 resolved wrong. Zero points, streak reset.",
+    "http_status": 200,
+    "response": {
+        "session_id": "demo_sess_0001",
+        "mode": "competitive",
+        "status": "active",
+        "phase": "awaiting_round",
+        "state_version": 8,
+        "server_now": "2026-10-19T10:00:14.000Z",
+        "session_started_at": "2026-10-19T10:00:00.000Z",
+        "session_expires_at": "2026-10-19T10:01:30.000Z",
+        "phase_deadline": null,
+        "rules": {
+            "version": "demo-rules-v1",
+            "session_seconds": 90,
+            "choice_seconds": 3,
+            "answer_seconds": 10,
+            "rounds_total": 6,
+            "points": {
+                "easy": 100,
+                "medium": 200,
+                "hard": 300
+            },
+            "streak_every": 3,
+            "streak_bonus": 100,
+            "max_streak_bonuses": 2
+        },
+        "rounds_total": 6,
+        "rounds_resolved": 2,
+        "score": 200,
+        "correct_count": 1,
+        "streak": 0,
+        "bonuses_awarded": 0,
+        "lifeline_available": false,
+        "round": null,
+        "last_result": {
+            "round_id": "demo_rnd_02",
+            "ordinal": 2,
+            "outcome": "wrong",
+            "difficulty": "hard",
+            "selected_option_id": "demo_opt_h2",
+            "correct_option_id": "demo_opt_h3",
+            "explanation": "Tungsten (W) has atomic number 74. (Demo content.)",
+            "points_awarded": 0,
+            "streak_bonus": 0,
+            "score_after": 200,
+            "streak_after": 0,
+            "resolved_at": "2026-10-19T10:00:14.000Z"
+        },
+        "result": null
+    }
+}

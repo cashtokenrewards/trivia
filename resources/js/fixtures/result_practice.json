@@ -1,0 +1,22 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Practice session: no rewards and no competitive eligibility consumed.",
+    "http_status": 200,
+    "response": {
+        "session_id": "demo_sess_practice_0001",
+        "mode": "practice",
+        "completion": "completed",
+        "end_reason": "six_rounds",
+        "final_score": 800,
+        "correct_count": 4,
+        "rounds_resolved": 6,
+        "bonuses_awarded": 0,
+        "completed_at": "2026-10-19T10:01:10.000Z",
+        "rewards": {
+            "qualification": "not_applicable",
+            "participation": "not_applicable",
+            "premium": "not_applicable",
+            "provider_mode": "none"
+        }
+    }
+}

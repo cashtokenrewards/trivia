@@ -1,0 +1,501 @@
+openapi: 3.1.0
+info:
+  title: CashToken Trivia API
+  version: 1.0.0-draft
+  license: { name: Proprietary, identifier: LicenseRef-CeLD-Proprietary }
+  description: |
+    PROPOSED contract, awaiting lead review (Checkpoint A). Human-readable rules and
+    state_version tables are in docs/API_CONTRACT.md. Examples are DEMO DATA; the same
+    payloads live in resources/js/fixtures/. Timestamps are UTC ISO 8601 with milliseconds.
+servers:
+  - url: /api/v1
+    description: Same origin as the React app
+security:
+  - sessionCookie: []
+tags:
+  - name: sessions
+    description: Game session lifecycle
+paths:
+  /sessions:
+    post:
+      tags: [sessions]
+      operationId: startSession
+      summary: Start a practice or competitive session
+      description: The 90 s clock starts when this request is received, never on page load.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartSessionRequest' }
+      responses:
+        '201':
+          description: Session created, or the saved outcome of a retry with the same key and body.
+          headers:
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Snapshot' }
+              examples:
+                SessionStarted:
+                  $ref: '#/components/examples/SessionStarted'
+        '401': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '419': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /sessions/active:
+    get:
+      tags: [sessions]
+      operationId: getActiveSession
+      summary: The caller's active session (recovery after refresh)
+      responses:
+        '200': { $ref: '#/components/responses/Snapshot' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /sessions/{session_id}:
+    get:
+      tags: [sessions]
+      operationId: getSnapshot
+      summary: Current snapshot (applies any elapsed deadlines first)
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200': { $ref: '#/components/responses/Snapshot' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /sessions/{session_id}/rounds:
+    post:
+      tags: [sessions]
+      operationId: openRound
+      summary: Open the next round (starts the 3 s box choice)
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VersionedRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/MutationSnapshot' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '419': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /sessions/{session_id}/rounds/{round_id}/box:
+    post:
+      tags: [sessions]
+      operationId: selectBox
+      summary: Select a box; the server issues exactly one question
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/RoundId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SelectBoxRequest' }
+      responses:
+        '200':
+          description: Question issued. Contains no correct answer.
+          headers:
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Snapshot' }
+              examples:
+                QuestionMediumIssued:
+                  $ref: '#/components/examples/QuestionMediumIssued'
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '419': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /sessions/{session_id}/rounds/{round_id}/lifeline:
+    post:
+      tags: [sessions]
+      operationId: useLifeline
+      summary: Remove one wrong option (once per session; the clock keeps running)
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/RoundId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VersionedRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/MutationSnapshot' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '419': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /sessions/{session_id}/rounds/{round_id}/answer:
+    post:
+      tags: [sessions]
+      operationId: submitAnswer
+      summary: Submit an answer
+      description: |
+        Server receipt time decides timeliness (inclusive deadline). A new answer that arrives
+        late and discovers the expiry resolves a timeout with 200, not an error.
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/RoundId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitAnswerRequest' }
+      responses:
+        '200':
+          description: Round resolved (correct, wrong or timeout). Correctness appears only in last_result.
+          headers:
+            Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Snapshot' }
+              examples:
+                AnswerCorrect:
+                  $ref: '#/components/examples/AnswerCorrect'
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '419': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /sessions/{session_id}/result:
+    get:
+      tags: [sessions]
+      operationId: getResult
+      summary: Terminal result including reward status
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Result of a finished session.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionResult' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: laravel_session
+      description: First-party Laravel session. Writes also require the X-XSRF-TOKEN CSRF header.
+  parameters:
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema: { type: string }
+    RoundId:
+      name: round_id
+      in: path
+      required: true
+      schema: { type: string }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: |
+        UUID v4 per logical action. Retries reuse it. Same key and body returns the saved
+        outcome; same key with a changed body returns 409 idempotency_conflict.
+      schema: { type: string, format: uuid }
+  headers:
+    IdempotentReplayed:
+      description: "true when the saved outcome of an earlier identical request is returned."
+      schema: { type: string, enum: ['true'] }
+  responses:
+    Snapshot:
+      description: Current snapshot.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Snapshot' }
+    MutationSnapshot:
+      description: Snapshot after the change, or the saved outcome of a retry.
+      headers:
+        Idempotent-Replayed: { $ref: '#/components/headers/IdempotentReplayed' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Snapshot' }
+    Error:
+      description: Standard error envelope. See API_CONTRACT.md section 6 for codes and UI handling.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+          examples:
+            stale:
+              summary: DEMO stale_state_version
+              value:
+                error:
+                  code: stale_state_version
+                  message: Your screen is out of date.
+                  retryable: false
+                  correlation_id: demo-corr-0001
+                  details: { current_state_version: 7 }
+                server_now: '2026-10-19T10:00:07.000Z'
+  examples:
+    SessionStarted:
+      summary: "DEMO session just started"
+      value: {"session_id":"demo_sess_0001","mode":"competitive","status":"active","phase":"awaiting_round","state_version":1,"server_now":"2026-10-19T10:00:00.000Z","session_started_at":"2026-10-19T10:00:00.000Z","session_expires_at":"2026-10-19T10:01:30.000Z","phase_deadline":null,"rules":{"version":"demo-rules-v1","session_seconds":90,"choice_seconds":3,"answer_seconds":10,"rounds_total":6,"points":{"easy":100,"medium":200,"hard":300},"streak_every":3,"streak_bonus":100,"max_streak_bonuses":2},"rounds_total":6,"rounds_resolved":0,"score":0,"correct_count":0,"streak":0,"bonuses_awarded":0,"lifeline_available":true,"round":null,"last_result":null,"result":null}
+    QuestionMediumIssued:
+      summary: "DEMO medium question issued (no correct answer present)"
+      value: {"session_id":"demo_sess_0001","mode":"competitive","status":"active","phase":"answering","state_version":3,"server_now":"2026-10-19T10:00:03.400Z","session_started_at":"2026-10-19T10:00:00.000Z","session_expires_at":"2026-10-19T10:01:30.000Z","phase_deadline":"2026-10-19T10:00:13.400Z","rules":{"version":"demo-rules-v1","session_seconds":90,"choice_seconds":3,"answer_seconds":10,"rounds_total":6,"points":{"easy":100,"medium":200,"hard":300},"streak_every":3,"streak_bonus":100,"max_streak_bonuses":2},"rounds_total":6,"rounds_resolved":0,"score":0,"correct_count":0,"streak":0,"bonuses_awarded":0,"lifeline_available":true,"round":{"round_id":"demo_rnd_01","ordinal":1,"status":"answering","boxes":null,"selected_box_id":"steady","auto_selected":false,"question":{"question_id":"demo_q_medium_01","category":"Science","difficulty":"medium","text":"DEMO: Which planet is known as the Red Planet?","options":[{"option_id":"demo_opt_m1","text":"Venus"},{"option_id":"demo_opt_m2","text":"Jupiter"},{"option_id":"demo_opt_m3","text":"Mars"},{"option_id":"demo_opt_m4","text":"Mercury"}],"removed_option_ids":[]},"answer_deadline":"2026-10-19T10:00:13.400Z"},"last_result":null,"result":null}
+    AnswerCorrect:
+      summary: "DEMO round resolved correct; correctness appears only in last_result"
+      value: {"session_id":"demo_sess_0001","mode":"competitive","status":"active","phase":"awaiting_round","state_version":4,"server_now":"2026-10-19T10:00:06.000Z","session_started_at":"2026-10-19T10:00:00.000Z","session_expires_at":"2026-10-19T10:01:30.000Z","phase_deadline":null,"rules":{"version":"demo-rules-v1","session_seconds":90,"choice_seconds":3,"answer_seconds":10,"rounds_total":6,"points":{"easy":100,"medium":200,"hard":300},"streak_every":3,"streak_bonus":100,"max_streak_bonuses":2},"rounds_total":6,"rounds_resolved":1,"score":200,"correct_count":1,"streak":1,"bonuses_awarded":0,"lifeline_available":true,"round":null,"last_result":{"round_id":"demo_rnd_01","ordinal":1,"outcome":"correct","difficulty":"medium","selected_option_id":"demo_opt_m3","correct_option_id":"demo_opt_m3","explanation":"Mars looks red because of iron oxide on its surface. (Demo content.)","points_awarded":200,"streak_bonus":0,"score_after":200,"streak_after":1,"resolved_at":"2026-10-19T10:00:06.000Z"},"result":null}
+  schemas:
+    Timestamp:
+      type: string
+      format: date-time
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$'
+      example: '2026-10-19T10:00:00.000Z'
+    Difficulty:
+      type: string
+      enum: [easy, medium, hard]
+    BoxId:
+      type: string
+      enum: [quick_win, steady, high_roller]
+    StartSessionRequest:
+      type: object
+      required: [mode, client_ready]
+      properties:
+        mode: { type: string, enum: [practice, competitive] }
+        client_ready:
+          type: boolean
+          enum: [true]
+          description: Assets loaded and the player pressed Start.
+    VersionedRequest:
+      type: object
+      required: [expected_state_version]
+      properties:
+        expected_state_version: { type: integer, minimum: 1 }
+    SelectBoxRequest:
+      allOf:
+        - $ref: '#/components/schemas/VersionedRequest'
+        - type: object
+          required: [box_id]
+          properties:
+            box_id: { $ref: '#/components/schemas/BoxId' }
+    SubmitAnswerRequest:
+      allOf:
+        - $ref: '#/components/schemas/VersionedRequest'
+        - type: object
+          required: [option_id]
+          properties:
+            option_id: { type: string }
+    Rules:
+      type: object
+      required: [version, session_seconds, choice_seconds, answer_seconds, rounds_total, points, streak_every, streak_bonus, max_streak_bonuses]
+      properties:
+        version: { type: string }
+        session_seconds: { type: integer }
+        choice_seconds: { type: integer }
+        answer_seconds: { type: integer }
+        rounds_total: { type: integer }
+        points:
+          type: object
+          required: [easy, medium, hard]
+          properties:
+            easy: { type: integer }
+            medium: { type: integer }
+            hard: { type: integer }
+        streak_every: { type: integer }
+        streak_bonus: { type: integer }
+        max_streak_bonuses: { type: integer }
+    Box:
+      type: object
+      required: [box_id, label, difficulty, base_points]
+      properties:
+        box_id: { $ref: '#/components/schemas/BoxId' }
+        label: { type: string }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
+        base_points: { type: integer }
+    QuestionOption:
+      type: object
+      required: [option_id, text]
+      properties:
+        option_id: { type: string, description: "Opaque, random per issued round." }
+        text: { type: string }
+    ActiveQuestion:
+      type: object
+      description: Never contains correct_option_id, is_correct or an explanation.
+      required: [question_id, category, difficulty, text, options, removed_option_ids]
+      additionalProperties: false
+      properties:
+        question_id: { type: string }
+        category: { type: string }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
+        text: { type: string }
+        options:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: { $ref: '#/components/schemas/QuestionOption' }
+        removed_option_ids:
+          type: array
+          maxItems: 1
+          items: { type: string }
+    Round:
+      type: object
+      required: [round_id, ordinal, status, boxes, selected_box_id, auto_selected, question, answer_deadline]
+      properties:
+        round_id: { type: string }
+        ordinal: { type: integer, minimum: 1, maximum: 6 }
+        status: { type: string, enum: [choosing, answering] }
+        boxes:
+          type: [array, 'null']
+          items: { $ref: '#/components/schemas/Box' }
+        selected_box_id:
+          oneOf:
+            - $ref: '#/components/schemas/BoxId'
+            - { type: "null" }
+        auto_selected: { type: boolean }
+        question:
+          oneOf:
+            - $ref: '#/components/schemas/ActiveQuestion'
+            - { type: "null" }
+        answer_deadline:
+          oneOf:
+            - $ref: '#/components/schemas/Timestamp'
+            - { type: "null" }
+    RoundResult:
+      type: object
+      description: Only for an already resolved round.
+      required: [round_id, ordinal, outcome, difficulty, selected_option_id, correct_option_id, explanation, points_awarded, streak_bonus, score_after, streak_after, resolved_at]
+      properties:
+        round_id: { type: string }
+        ordinal: { type: integer }
+        outcome: { type: string, enum: [correct, wrong, timeout] }
+        difficulty: { $ref: '#/components/schemas/Difficulty' }
+        selected_option_id: { type: [string, 'null'] }
+        correct_option_id: { type: string }
+        explanation: { type: string }
+        points_awarded: { type: integer }
+        streak_bonus: { type: integer }
+        score_after: { type: integer }
+        streak_after: { type: integer }
+        resolved_at: { $ref: '#/components/schemas/Timestamp' }
+    RewardStatus:
+      type: string
+      enum: [not_applicable, not_earned, pending, granted, unavailable, under_review]
+    RewardsSummary:
+      type: object
+      required: [qualification, participation, premium, provider_mode]
+      properties:
+        qualification: { type: string, enum: [qualified, not_qualified, not_applicable] }
+        participation: { $ref: '#/components/schemas/RewardStatus' }
+        premium: { $ref: '#/components/schemas/RewardStatus' }
+        provider_mode:
+          type: string
+          enum: [none, fake, live]
+          description: fake is only possible outside production; the UI labels it sandbox.
+    SessionResult:
+      type: object
+      required: [session_id, mode, completion, end_reason, final_score, correct_count, rounds_resolved, bonuses_awarded, completed_at, rewards]
+      properties:
+        session_id: { type: string }
+        mode: { type: string, enum: [practice, competitive] }
+        completion: { type: string, enum: [completed, partial] }
+        end_reason: { type: string, enum: [six_rounds, session_expired] }
+        final_score: { type: integer, maximum: 2000 }
+        correct_count: { type: integer }
+        rounds_resolved: { type: integer }
+        bonuses_awarded: { type: integer }
+        completed_at: { $ref: '#/components/schemas/Timestamp' }
+        rewards: { $ref: '#/components/schemas/RewardsSummary' }
+    Snapshot:
+      type: object
+      required: [session_id, mode, status, phase, state_version, server_now, session_started_at, session_expires_at, phase_deadline, rules, rounds_total, rounds_resolved, score, correct_count, streak, bonuses_awarded, lifeline_available, round, last_result, result]
+      properties:
+        session_id: { type: string }
+        mode: { type: string, enum: [practice, competitive] }
+        status: { type: string, enum: [active, completed] }
+        phase: { type: string, enum: [awaiting_round, choosing, answering, completed] }
+        state_version: { type: integer, minimum: 1 }
+        server_now: { $ref: '#/components/schemas/Timestamp' }
+        session_started_at: { $ref: '#/components/schemas/Timestamp' }
+        session_expires_at: { $ref: '#/components/schemas/Timestamp' }
+        phase_deadline:
+          oneOf:
+            - $ref: '#/components/schemas/Timestamp'
+            - { type: "null" }
+        rules: { $ref: '#/components/schemas/Rules' }
+        rounds_total: { type: integer }
+        rounds_resolved: { type: integer }
+        score: { type: integer, maximum: 2000 }
+        correct_count: { type: integer }
+        streak:
+          type: integer
+          description: Consecutive-correct counter toward the next bonus.
+        bonuses_awarded: { type: integer, maximum: 2 }
+        lifeline_available: { type: boolean }
+        round:
+          oneOf:
+            - $ref: '#/components/schemas/Round'
+            - { type: "null" }
+        last_result:
+          oneOf:
+            - $ref: '#/components/schemas/RoundResult'
+            - { type: "null" }
+        result:
+          oneOf:
+            - $ref: '#/components/schemas/SessionResult'
+            - { type: "null" }
+    ApiError:
+      type: object
+      required: [error, server_now]
+      properties:
+        error:
+          type: object
+          required: [code, message, retryable, correlation_id]
+          properties:
+            code:
+              type: string
+              enum:
+                - unauthenticated
+                - forbidden
+                - session_not_found
+                - round_not_found
+                - no_active_session
+                - stale_state_version
+                - invalid_phase
+                - phase_expired
+                - session_not_finished
+                - session_completed
+                - idempotency_conflict
+                - idempotency_in_progress
+                - active_session_exists
+                - already_participated
+                - campaign_not_open
+                - campaign_closed
+                - sessions_paused
+                - csrf_mismatch
+                - validation_failed
+                - idempotency_key_required
+                - box_invalid
+                - option_not_in_round
+                - rate_limited
+                - content_unavailable
+                - server_error
+                - service_unavailable
+            message: { type: string }
+            retryable: { type: boolean }
+            correlation_id: { type: string }
+            details: { type: object, additionalProperties: true }
+        server_now: { $ref: '#/components/schemas/Timestamp' }

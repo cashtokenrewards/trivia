@@ -1,0 +1,14 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Error example: already_participated.",
+    "http_status": 409,
+    "response": {
+        "error": {
+            "code": "already_participated",
+            "message": "You have already played the competition. You can still practise.",
+            "retryable": false,
+            "correlation_id": "demo-corr-0001"
+        },
+        "server_now": "2026-10-19T10:00:07.000Z"
+    }
+}
