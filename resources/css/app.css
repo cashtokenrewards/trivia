@@ -101,9 +101,6 @@ p { margin: 0; }
 .steps { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: .7rem; }
 .caption { color: var(--muted); font-size: .85rem; text-align: center; }
 
-.prefs { display: flex; gap: 1rem; flex-wrap: wrap; }
-.prefs label { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; }
-.prefs input { width: 22px; height: 22px; accent-color: var(--accent); }
 
 .status { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem; border-radius: 999px; background: var(--panel); font-size: .9rem; }
 .status::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: var(--muted); }
@@ -230,10 +227,9 @@ p { margin: 0; }
 .circle-timer[data-paused="true"] .ring-seconds { animation: none; }
 @keyframes tick-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
 
-/* ---------- Arena wrapper, sound button, key hints, demo pause ---------- */
+/* ---------- Arena wrapper, key hints, demo pause ---------- */
 .arena-wrap { position: relative; flex: none; }
-.sound-btn { position: absolute; top: .5rem; left: .5rem; z-index: 2; min-height: 44px; padding: .35rem .8rem; border-radius: 999px; border: 1px solid var(--line); background: rgba(11, 16, 32, .75); color: var(--text); font: inherit; font-size: .8rem; cursor: pointer; }
-.sound-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
 .keyhint { display: inline-grid; place-items: center; min-width: 1.4rem; height: 1.4rem; margin-right: .55rem; padding: 0 .25rem; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); font: inherit; font-size: .72rem; font-weight: 700; }
 .box-btn .keyhint { margin: 0 0 .15rem; }
 @media (hover: none) { .keyhint { display: none; } }
@@ -241,9 +237,6 @@ p { margin: 0; }
 .pause-toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
 .demo-banner { display: flex; flex-direction: column; gap: .1rem; }
 
-/* With no 3D view the message takes the frame, so the sound button moves below it instead of over it. */
-.arena-wrap:has(.arena-frame[data-fallback="true"]) { display: flex; flex-direction: column; gap: .4rem; }
-.arena-wrap:has(.arena-frame[data-fallback="true"]) .sound-btn { position: static; align-self: flex-start; }
 
 /* ---------- Recommended practice, meet the boxes, box points ---------- */
 .card { position: relative; }
@@ -273,3 +266,35 @@ p { margin: 0; }
 /* In the game the banners sit at the BOTTOM so they never cover the countdown ring or the chests, and the page gets matching padding so they never cover a button either. */
 .arena .banner-stack { top: auto; bottom: max(.5rem, env(safe-area-inset-bottom)); }
 .arena.with-banner { padding-bottom: calc(env(safe-area-inset-bottom) + 8.5rem); }
+
+/* ---------- Settings page ---------- */
+.settings-page { position: fixed; inset: 0; z-index: 50; overflow-y: auto; background: var(--bg); padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); }
+.settings-inner { max-width: 32rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+.settings-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .6rem; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 56px; padding: .8rem 1rem; background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.setting-text { display: flex; flex-direction: column; gap: .15rem; }
+.setting-text span { color: var(--muted); font-size: .88rem; }
+.setting-row input[role="switch"] { appearance: none; flex: none; position: relative; width: 52px; height: 30px; margin: 0; border-radius: 999px; background: var(--line); cursor: pointer; transition: background .2s ease; }
+.setting-row input[role="switch"]::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--text); transition: transform .2s ease; }
+.setting-row input[role="switch"]:checked { background: var(--accent); }
+.setting-row input[role="switch"]:checked::after { transform: translateX(22px); background: var(--accent-ink); }
+.setting-row input[role="switch"]:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+:root[data-reduced-motion="true"] .setting-row input[role="switch"], :root[data-reduced-motion="true"] .setting-row input[role="switch"]::after { transition: none; }
+
+/* ---------- Settings gear (icon only) ---------- */
+.icon-btn { flex: none; align-self: center; display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-2); color: var(--text); cursor: pointer; }
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.icon-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.screen-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.screen-top > .icon-btn:only-child { margin-left: auto; }
+.hero { padding-top: .5rem; }
+/* Very narrow phones: the gear takes its own row so the scoreboard and timer keep their room. */
+@media (max-width: 359px) {
+    .topbar { display: grid; grid-template-columns: 1fr auto; row-gap: .4rem; }
+    .topbar > .icon-btn { grid-column: 1 / -1; justify-self: end; }
+}
+
+/* ---------- Overall game clock: still ring, red scoreboard number in the last 20 seconds ---------- */
+.circle-timer[data-still="true"] .ring-progress { transition: stroke .3s ease; }
+.circle-timer[data-still="true"] .ring-seconds { animation: none; }
+.hud strong[data-tone="danger"] { color: var(--bad); }

@@ -42,6 +42,14 @@ export function timerTone(remainingMs: number | null, totalMs: number): TimerTon
     return 'calm';
 }
 
+/** The overall game clock turns red when this much time (20 s) or less is left. */
+export const GAME_URGENT_MS = 20000;
+
+/** Tone of the overall game clock: calm (green) until 20 seconds are left, then danger (red). Unknown time stays calm. */
+export function gameClockTone(remainingMs: number | null): 'calm' | 'danger' {
+    return remainingMs !== null && remainingMs <= GAME_URGENT_MS ? 'danger' : 'calm';
+}
+
 /** Whole seconds shown in the ring. */
 export function secondsLabel(remainingMs: number | null): string {
     return remainingMs === null ? '–' : String(Math.max(0, Math.ceil(remainingMs / 1000)));

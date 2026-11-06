@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { fetchHealth, type BackendState } from '../lib/health';
-import type { Preferences } from '../state/usePreferences';
 
 export function DemoBanner({ paused, onTogglePause }: { paused: boolean; onTogglePause: () => void }) {
     return (
@@ -55,18 +54,5 @@ export function ServerStatus() {
             {backend === 'online' && 'Server online'}
             {backend === 'offline' && 'Server unreachable'}
         </span>
-    );
-}
-
-export function PreferenceToggles({ preferences, onToggle }: { preferences: Preferences; onToggle: (key: keyof Preferences) => void }) {
-    return (
-        <div className="prefs" role="group" aria-label="Display preferences">
-            <label>
-                <input type="checkbox" checked={preferences.sound} onChange={() => onToggle('sound')} /> Sound
-            </label>
-            <label>
-                <input type="checkbox" checked={preferences.reducedMotion} onChange={() => onToggle('reducedMotion')} /> Reduce motion
-            </label>
-        </div>
     );
 }

@@ -7,8 +7,21 @@ export function isDemoAllowed(): boolean {
     return import.meta.env.DEV || import.meta.env.VITE_ALLOW_DEMO === 'true';
 }
 
+/**
+ * The static demo site (Netlify) is built with VITE_DEMO_DEFAULT=true so "/" opens the demo with no
+ * query string. The Laravel build never sets it, so the normal path is unchanged.
+ */
+export function isDemoDefault(): boolean {
+    return import.meta.env.VITE_DEMO_DEFAULT === 'true';
+}
+
+/** The hosted demo site hides the demo labels (banner, badge, notes). Local demo (?demo=1) keeps them. */
+export function isDemoQuiet(): boolean {
+    return import.meta.env.VITE_DEMO_QUIET === 'true';
+}
+
 export function isDemoRequested(search: string = window.location.search): boolean {
-    return isDemoAllowed() && new URLSearchParams(search).get('demo') === '1';
+    return isDemoAllowed() && (isDemoDefault() || new URLSearchParams(search).get('demo') === '1');
 }
 
 /** Developer-only 3D arena sandbox (synthetic events). Same gate as demo mode, plus ?arena=1. */

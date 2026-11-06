@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RING_CIRCUMFERENCE, crossedThreshold, remainingFraction, ringDashOffset, secondsLabel, spokenWarning, timerTone } from './timerVisuals';
+import { GAME_URGENT_MS, RING_CIRCUMFERENCE, crossedThreshold, gameClockTone, remainingFraction, ringDashOffset, secondsLabel, spokenWarning, timerTone } from './timerVisuals';
 
 describe('ring geometry', () => {
     it('clamps the remaining fraction and treats unknown time as empty', () => {
@@ -70,5 +70,20 @@ describe('labels and warnings', () => {
         expect(crossedThreshold(3100, 900, [3, 2, 1])).toBe(1); // a long frame crossed several: report the nearest
         expect(crossedThreshold(null, 900, [3])).toBeNull();
         expect(crossedThreshold(900, null, [3])).toBeNull();
+    });
+});
+
+describe('gameClockTone', () => {
+    it('is calm (green) until 20 seconds are left, then danger (red)', () => {
+        expect(GAME_URGENT_MS).toBe(20000);
+        expect(gameClockTone(90000)).toBe('calm');
+        expect(gameClockTone(20001)).toBe('calm');
+        expect(gameClockTone(20000)).toBe('danger');
+        expect(gameClockTone(5000)).toBe('danger');
+        expect(gameClockTone(0)).toBe('danger');
+    });
+
+    it('stays calm when the time is not known yet', () => {
+        expect(gameClockTone(null)).toBe('calm');
     });
 });

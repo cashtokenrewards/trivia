@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { LazyDemoGameApi } from './api/lazyDemo';
 import { HttpGameApi } from './api/client';
 import { Loading } from './components/Common';
 import { StatusStrip } from './components/ConnectionBanner';
-import { demoRuleOverrides, isDemoRequested } from './config';
+import { demoRuleOverrides, isDemoQuiet, isDemoRequested } from './config';
 import { Arena } from './screens/Arena';
 import { ErrorView } from './screens/ErrorView';
 import { Identity, Instructions, Landing, PracticeAdvice, Readiness } from './screens/PreGame';
 import { Results } from './screens/Results';
+import { SettingsPage } from './screens/Settings';
 import { useGame } from './state/useGame';
 import { hasPractised, markPractised } from './state/practiceHistory';
 import { usePreferences, type Preferences } from './state/usePreferences';
 import { useOnlineStatus } from './state/useOnlineStatus';
+import { useMusic } from './state/useMusic';
 import { useSoundPlayer } from './state/useSound';
 import type { SessionMode } from './types/api';
 
@@ -19,23 +21,38 @@ type PreGameScreen = 'landing' | 'identity' | 'advice' | 'instructions' | 'readi
 
 export default function App() {
     const demo = useMemo(() => isDemoRequested(), []);
+    // Labels are hidden only on the hosted demo site. The game itself is the same.
+    const quiet = demo && isDemoQuiet();
     const api = useMemo(() => (demo ? new LazyDemoGameApi(demoRuleOverrides()) : new HttpGameApi()), [demo]);
     const game = useGame(api);
     const { preferences, toggle } = usePreferences();
     const player = useSoundPlayer(preferences.sound);
     const online = useOnlineStatus();
 
-    // Turning sound on is a tap, which is the gesture browsers require before any audio may start.
+    const [screen, setScreen] = useState<PreGameScreen>('landing');
+    const [mode, setMode] = useState<SessionMode>('practice');
+    const [settingsOpen, setSettingsOpen] = useState(false);
+
+    const { state } = game;
+
+    // Music plays while a game is in progress (from the Start tap until the results), if it is switched on.
+    const inGame = state.ui === 'starting' || (state.snapshot !== null && state.ui !== 'completed' && state.error === null);
+    const music = useMusic(preferences.music && inGame);
+
+    // Turning sound or music on is a tap, which is the gesture browsers require before any audio may start.
     const onToggle = (key: keyof Preferences) => {
         if (key === 'sound') player.unlock();
+        if (key === 'music' && !preferences.music && inGame) music.prime();
 
         toggle(key);
     };
 
-    const [screen, setScreen] = useState<PreGameScreen>('landing');
-    const [mode, setMode] = useState<SessionMode>('practice');
+    const openSettings = () => setSettingsOpen(true);
+    const start = () => {
+        if (preferences.music) music.prime();
 
-    const { state } = game;
+        void game.start(mode);
+    };
 
     // Remember a finished practice game so the "practise first?" advice is not repeated (advice only; the server enforces the real limit).
     const finishedPractice = state.ui === 'completed' && state.snapshot?.mode === 'practice';
@@ -53,6 +70,7 @@ export default function App() {
         setScreen(next === 'competitive' ? 'identity' : 'instructions');
     };
 
+    const render = (): ReactNode => {
     if (state.error) {
         return (
             <ErrorView
@@ -84,7 +102,7 @@ export default function App() {
         return (
             <Results
                 result={state.snapshot.result}
-                demo={demo}
+                demo={demo && !quiet}
                 onPracticeAgain={() => {
                     game.reset();
                     choose('practice');
@@ -99,7 +117,7 @@ export default function App() {
     }
 
     if (state.snapshot) {
-        return <Arena game={game} demo={demo} reducedMotion={preferences.reducedMotion} player={player} soundOn={preferences.sound} onToggleSound={() => onToggle('sound')} />;
+        return <Arena game={game} demo={demo && !quiet}reducedMotion={preferences.reducedMotion} player={player} onOpenSettings={openSettings} />;
     }
 
     // Before a game there is no clock, so the only thing worth saying is whether a connection is available.
@@ -110,7 +128,7 @@ export default function App() {
             return (
                 <>
                     {strip}
-                    <Identity demo={demo} onContinue={() => setScreen(hasPractised() ? 'instructions' : 'advice')} onBack={() => setScreen('landing')} />
+                    <Identity demo={demo} quiet={quiet}onContinue={() => setScreen(hasPractised() ? 'instructions' : 'advice')} onBack={() => setScreen('landing')} />
                 </>
             );
         case 'advice':
@@ -133,9 +151,8 @@ export default function App() {
                     {strip}
                     <Readiness
                         mode={mode}
-                        preferences={preferences}
-                        onToggle={onToggle}
-                        onStart={() => void game.start(mode)}
+                        onOpenSettings={openSettings}
+                        onStart={start}
                         onBack={() => setScreen('instructions')}
                     />
                 </>
@@ -144,8 +161,16 @@ export default function App() {
             return (
                 <>
                     {strip}
-                    <Landing demo={demo} preferences={preferences} onToggle={onToggle} onPlay={choose} />
+                    <Landing demo={demo} quiet={quiet}onOpenSettings={openSettings} onPlay={choose} />
                 </>
             );
     }
+    };
+
+    return (
+        <>
+            {render()}
+            {settingsOpen && <SettingsPage preferences={preferences} onToggle={onToggle} onClose={() => setSettingsOpen(false)} inGame={inGame} />}
+        </>
+    );
 }

@@ -1,20 +1,24 @@
 import type { SessionMode } from '../types/api';
-import { PreferenceToggles, Screen, ServerStatus } from '../components/Common';
+import { Screen, ServerStatus } from '../components/Common';
 import { MeetTheBoxes } from '../components/MeetTheBoxes';
 import { BOX_INFO } from '../game/boxInfo';
 import { preGameRules } from '../game/ruleCopy';
-import type { Preferences } from '../state/usePreferences';
+import { SettingsButton } from './Settings';
 
 interface LandingProps {
     demo: boolean;
-    preferences: Preferences;
-    onToggle: (key: keyof Preferences) => void;
+    /** Hosted demo: no demo badge, and no server status either (there is no server). */
+    quiet?: boolean;
+    onOpenSettings: () => void;
     onPlay: (mode: SessionMode) => void;
 }
 
-export function Landing({ demo, preferences, onToggle, onPlay }: LandingProps) {
+export function Landing({ demo, quiet = false, onOpenSettings, onPlay }: LandingProps) {
     return (
         <Screen label="Home">
+            <div className="screen-top">
+                <SettingsButton onClick={onOpenSettings} />
+            </div>
             <header className="hero">
                 <h1>
                     Cash<span>Token</span> Trivia
@@ -35,18 +39,19 @@ export function Landing({ demo, preferences, onToggle, onPlay }: LandingProps) {
             </div>
 
             <footer className="footer-row">
-                {demo ? <span className="badge-demo">Demo mode</span> : <ServerStatus />}
-                <PreferenceToggles preferences={preferences} onToggle={onToggle} />
+                {demo ? !quiet && <span className="badge-demo">Demo mode</span> : <ServerStatus />}
             </footer>
         </Screen>
     );
 }
 
-export function Identity({ demo, onContinue, onBack }: { demo: boolean; onContinue: () => void; onBack: () => void }) {
+export function Identity({ demo, quiet = false, onContinue, onBack }: { demo: boolean; quiet?: boolean; onContinue: () => void; onBack: () => void }) {
     return (
         <Screen label="Sign in">
             <h2>Who is playing?</h2>
-            {demo ? (
+            {demo && quiet ? (
+                <p className="panel">You are playing as a guest.</p>
+            ) : demo ? (
                 <p className="panel">
                     You are signed in as <strong>Demo Player</strong> (a made-up player used only in demo mode).
                 </p>
@@ -159,24 +164,25 @@ export function Instructions({ mode, onContinue, onBack }: { mode: SessionMode; 
 
 interface ReadinessProps {
     mode: SessionMode;
-    preferences: Preferences;
-    onToggle: (key: keyof Preferences) => void;
+    onOpenSettings: () => void;
     onStart: () => void;
     onBack: () => void;
 }
 
-export function Readiness({ mode, preferences, onToggle, onStart, onBack }: ReadinessProps) {
+export function Readiness({ mode, onOpenSettings, onStart, onBack }: ReadinessProps) {
     const rules = preGameRules(mode);
 
     return (
         <Screen label="Ready to start">
-            <h2>Ready?</h2>
+            <div className="screen-top">
+                <h2>Ready?</h2>
+                <SettingsButton onClick={onOpenSettings} />
+            </div>
             <p className="panel">
                 Take your time to look at the boxes. The {rules.sessionSeconds}-second game clock starts only when you press <strong>Start</strong>.
             </p>
             <MeetTheBoxes mode={mode} />
             {mode === 'competitive' && <p className="panel panel-warn">This counts as your one competitive game.</p>}
-            <PreferenceToggles preferences={preferences} onToggle={onToggle} />
             <div className="actions">
                 <button className="btn btn-primary btn-big" onClick={onStart}>
                     Start

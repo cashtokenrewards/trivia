@@ -8,11 +8,12 @@ import { ConnectionBanner } from '../components/ConnectionBanner';
 import { demoClock } from '../demo/demoClock';
 import { connectionNotice } from '../game/connectionNotice';
 import { keyAction } from '../game/keys';
-import { crossedThreshold, spokenWarning } from '../game/timerVisuals';
+import { crossedThreshold, gameClockTone, spokenWarning } from '../game/timerVisuals';
 import { useCountdown } from '../state/useCountdown';
 import { useOnlineStatus } from '../state/useOnlineStatus';
 import type { GameController } from '../state/useGame';
 import type { Box, Snapshot } from '../types/api';
+import { SettingsButton } from './Settings';
 
 const seconds = (ms: number | null) => (ms === null ? '–' : String(Math.ceil(ms / 1000)));
 
@@ -43,7 +44,7 @@ function Hud({ snapshot, sessionLeft }: { snapshot: Snapshot; sessionLeft: numbe
             </div>
             <div>
                 <span className="hud-label">Game</span>
-                <strong>{seconds(sessionLeft)}s</strong>
+                <strong data-tone={gameClockTone(sessionLeft)}>{seconds(sessionLeft)}s</strong>
             </div>
         </header>
     );
@@ -71,11 +72,10 @@ interface ArenaProps {
     demo: boolean;
     reducedMotion: boolean;
     player: SoundPlayer;
-    soundOn: boolean;
-    onToggleSound: () => void;
+    onOpenSettings: () => void;
 }
 
-export function Arena({ game, demo, reducedMotion, player, soundOn, onToggleSound }: ArenaProps) {
+export function Arena({ game, demo, reducedMotion, player, onOpenSettings }: ArenaProps) {
     const { state } = game;
     const snapshot = state.snapshot;
     const ui = state.ui;
@@ -133,7 +133,7 @@ export function Arena({ game, demo, reducedMotion, player, soundOn, onToggleSoun
     const tapKey = pending?.kind === 'select' ? pending.key : null;
     const lastTapKey = useRef<string | null>(null);
     useEffect(() => {
-        if (tapKey && tapKey !== lastTapKey.current) player.play('tap');
+        if (tapKey && tapKey !== lastTapKey.current) player.play('pick');
 
         lastTapKey.current = tapKey;
     }, [tapKey, player]);
@@ -217,9 +217,7 @@ export function Arena({ game, demo, reducedMotion, player, soundOn, onToggleSoun
     const question = round?.question ?? null;
     const timedPhase = ui === 'choosing' || ui === 'answering' || ui === 'submitting';
     const phaseTotal = (ui === 'choosing' ? snapshot.rules.choice_seconds : snapshot.rules.answer_seconds) * 1000;
-    const ringRemaining = timedPhase ? phaseLeft : sessionLeft;
-    const ringTotal = timedPhase ? phaseTotal : snapshot.rules.session_seconds * 1000;
-    const ringLabel = ui === 'choosing' ? 'Pick' : timedPhase ? 'Answer' : 'Game';
+    const ringLabel = ui === 'choosing' ? 'Pick' : 'Answer';
     const spoken = ui === 'answering' ? spokenWarning(phaseLeft) : '';
     const result = snapshot.last_result;
     const remembered = state.lastQuestion && result && state.lastQuestion.roundId === result.round_id ? state.lastQuestion.question : null;
@@ -254,15 +252,13 @@ export function Arena({ game, demo, reducedMotion, player, soundOn, onToggleSoun
             </div>
 
             <div className="topbar">
+                <SettingsButton onClick={onOpenSettings} />
                 <Hud snapshot={snapshot} sessionLeft={sessionLeft} />
-                <CircleTimer remainingMs={ringRemaining} totalMs={ringTotal} label={ringLabel} paused={demo && paused} />
+                {timedPhase && <CircleTimer remainingMs={phaseLeft} totalMs={phaseTotal} label={ringLabel} paused={demo && paused} />}
             </div>
 
             <div className="arena-wrap">
                 <ArenaCanvas game={game} reducedMotion={reducedMotion} />
-                <button className="sound-btn" aria-pressed={soundOn} onClick={onToggleSound}>
-                    Sound {soundOn ? 'on' : 'off'}
-                </button>
             </div>
 
             <p className="sr-only" role="status" aria-live="polite">

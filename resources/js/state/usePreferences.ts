@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 
 export interface Preferences {
+    /** Background music while a game is in progress. On by default. */
+    music: boolean;
+    /** Short sound effects. On by default. */
     sound: boolean;
     reducedMotion: boolean;
 }
 
-const KEY = 'ct.preferences.v1';
+// v2: sound effects became on by default. Settings saved under v1 stored "off" for players who never chose it, so they are not carried over.
+const KEY = 'ct.preferences.v2';
 
 function systemPrefersReducedMotion(): boolean {
     try {
@@ -17,7 +21,7 @@ function systemPrefersReducedMotion(): boolean {
 
 /** Reads the stored preferences. Storage may be blocked, so every access is guarded. */
 export function loadPreferences(): Preferences {
-    const defaults: Preferences = { sound: false, reducedMotion: systemPrefersReducedMotion() };
+    const defaults: Preferences = { music: true, sound: true, reducedMotion: systemPrefersReducedMotion() };
 
     try {
         const raw = window.localStorage.getItem(KEY);
@@ -26,6 +30,7 @@ export function loadPreferences(): Preferences {
         const parsed = JSON.parse(raw) as Partial<Preferences>;
 
         return {
+            music: typeof parsed.music === 'boolean' ? parsed.music : defaults.music,
             sound: typeof parsed.sound === 'boolean' ? parsed.sound : defaults.sound,
             reducedMotion: typeof parsed.reducedMotion === 'boolean' ? parsed.reducedMotion : defaults.reducedMotion,
         };

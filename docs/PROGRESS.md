@@ -251,3 +251,21 @@ Not verified
 - The mock server and fault scenarios live outside the repository (scratchpad), like the earlier browser scripts; adding Playwright to the repo is Prompt 21.
 - Only the answer has a recovery reference: after a reload an unconfirmed box choice, lifeline or "next round" is settled from the snapshot, not replayed.
 - Keyboard-only and screen-reader walkthroughs of the new banners were not done.
+
+## Follow-up: Settings page and background music (2026-10-28)
+- New full-screen Settings page (Music, Sound effects, Reduce motion) opened by an icon-only gear (aria-label "Settings") at the top of the home, ready and game screens (and the arena sandbox, which hides music and sound). It replaces the inline checkboxes and the in-game "Sound on/off" button. Opening it never pauses, resets or re-renders the game; the page says so when a game is running.
+- Music: `resources/audio/game-music.mp3` looped by `audio/music.ts` / `state/useMusic.ts`. On by default, starts at the Start tap, pauses when the tab is hidden, stops at the results. Saved settings from before this change keep music on. See D-020 (licence not verified).
+- Checked: typecheck, lint, 351 unit tests (12 new), production build, and a headless Chromium run (23 checks: defaults, dialog, focus, Escape, music starts after Start and loops at 0.3, in-game toggle pauses and resumes it, reload keeps the setting).
+- Not checked: actual audible playback on a real phone (headless browser only), iOS Safari autoplay behaviour, music loop seam, and the 3.7 MB download on mobile data.
+- Correction: the browser checks above ran against the already-running Vite dev server (`public/hot` points at it), not against the production build. `vite build` compiles, but the built bundle was not exercised in a browser. Gear layout was also checked at 420, 360 and 320 px wide (under 360 px the gear gets its own row).
+
+## Follow-up: static demo for Netlify (2026-10-28)
+- Added `index.html`, `vite.static.config.ts`, `netlify.toml`, `npm run build:static` and `isDemoDefault()` in `config.ts` (4 new tests). Output is only `index.html` + `assets/` (5.4 MB, mostly the music); no Laravel files. See D-021.
+- Checked in headless Chromium against a genuine production build served by `vite preview` (no Laravel, no dev server): `/` opens the demo, a deep link falls back to the app, a practice round plays to feedback, music plays after Start, `/?arena=1` renders the 3D sandbox, no failed requests, no `/api/` calls, no console errors. 355 unit tests, typecheck and lint pass.
+- Not done: no deploy to Netlify (needs the owner's account); Netlify's own redirect and header rules were not run (only the equivalent fallback in `vite preview`); real-phone check.
+- Hosted demo is now "quiet" (`VITE_DEMO_QUIET`, set only in `vite.static.config.ts`): no demo badge, banner, pause switch, "Demo Player" text, results demo note, arena-sandbox banner or WebGL-failure checkbox; page title is "CashToken Trivia". Local `?demo=1` keeps all labels. The results line "Sandbox rewards: test only, not real" is kept on purpose (it tells players shown rewards are not real). Checked in headless Chromium on home, sign-in, ready, game, results and arena pages of the production build; 356 unit tests pass.
+
+## Follow-up: sound effects and game-clock ring (2026-10-28)
+- Sound effects default on; box pick = owner's treasure sample (decoded after first tap, built-in fallback); richer correct and wrong sounds; chime only for an auto-picked box. Overall game ring is still (full, green, red at <=20 s) with a red scoreboard GAME number; Pick/Answer rings unchanged. See D-022.
+- Checked in headless Chromium on the static production build: sound and music on by default; picking a box starts the sample; a correct and a wrong answer each fire their own sound; an auto-picked box fires the pick sound once; the ring is draining in Pick, still/full/green between rounds, still/full/red at 20 s; number turns red. 364 unit tests, typecheck and lint pass.
+- Not checked: how the sounds actually SOUND (no speakers/ears here), real-phone playback, iOS Safari, volume balance against the music.

@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc --noEmit && vite build",
+        "build:static": "tsc --noEmit && vite build --config vite.static.config.ts",
         "typecheck": "tsc --noEmit",
         "lint": "eslint resources/js",
         "test:unit": "vitest run"

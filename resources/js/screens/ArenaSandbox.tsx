@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Outcome, QualityProfile } from '../arena/ArenaScene';
 import { BOX_LAYOUT, MAX_SCORE, towerLevel } from '../arena/logic';
 import { useArenaScene } from '../arena/useArenaScene';
+import { isDemoQuiet } from '../config';
 import { usePreferences } from '../state/usePreferences';
 import type { BoxId } from '../types/api';
+import { SettingsButton, SettingsPage } from './Settings';
 
 /**
  * Developer sandbox for the 3D arena (Prompt 12). Reachable only in demo-allowed builds with
@@ -14,6 +16,7 @@ export default function ArenaSandbox() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { preferences, toggle } = usePreferences();
 
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const [simulateFailure, setSimulateFailure] = useState(false);
     const [quality, setQuality] = useState<QualityProfile>('medium');
     const [selected, setSelected] = useState<BoxId | null>(null);
@@ -58,9 +61,11 @@ export default function ArenaSandbox() {
 
     return (
         <main className="screen arena" aria-label="Arena sandbox">
-            <div className="demo-banner" role="status">
-                <strong>ARENA SANDBOX</strong> Synthetic events only. No session is created and nothing is sent to the server.
-            </div>
+            {!isDemoQuiet() && (
+                <div className="demo-banner" role="status">
+                    <strong>ARENA SANDBOX</strong> Synthetic events only. No session is created and nothing is sent to the server.
+                </div>
+            )}
 
             <section className="arena-frame" aria-label="3D arena">
                 <canvas key={String(simulateFailure)} ref={canvasRef} className="arena-canvas" data-status={status} aria-hidden="true" />
@@ -129,12 +134,12 @@ export default function ArenaSandbox() {
                         <option value="medium">Medium</option>
                     </select>
                 </label>
-                <label>
-                    <input type="checkbox" checked={reducedMotion} onChange={() => toggle('reducedMotion')} /> Reduce motion
-                </label>
-                <label>
-                    <input type="checkbox" checked={simulateFailure} onChange={() => setSimulateFailure((value) => !value)} /> Simulate WebGL failure
-                </label>
+                <SettingsButton onClick={() => setSettingsOpen(true)} />
+                {!isDemoQuiet() && (
+                    <label>
+                        <input type="checkbox" checked={simulateFailure} onChange={() => setSimulateFailure((value) => !value)} /> Simulate WebGL failure
+                    </label>
+                )}
             </div>
 
             <ul className="event-log" aria-live="polite" aria-label="Scene events">
@@ -142,6 +147,8 @@ export default function ArenaSandbox() {
                     <li key={`${index}-${line}`}>{line}</li>
                 ))}
             </ul>
+
+            {settingsOpen && <SettingsPage preferences={preferences} onToggle={toggle} onClose={() => setSettingsOpen(false)} hide={['music', 'sound']} />}
         </main>
     );
 }
