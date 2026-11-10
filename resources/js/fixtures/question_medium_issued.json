@@ -1,0 +1,74 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. POST .../box with steady: a medium question is issued. No correct answer in the payload.",
+    "http_status": 200,
+    "response": {
+        "session_id": "demo_sess_0001",
+        "mode": "competitive",
+        "status": "active",
+        "phase": "answering",
+        "state_version": 3,
+        "server_now": "2026-10-19T10:00:03.400Z",
+        "session_started_at": "2026-10-19T10:00:00.000Z",
+        "session_expires_at": "2026-10-19T10:01:30.000Z",
+        "phase_deadline": "2026-10-19T10:00:13.400Z",
+        "rules": {
+            "version": "demo-rules-v1",
+            "session_seconds": 90,
+            "choice_seconds": 3,
+            "answer_seconds": 10,
+            "rounds_total": 6,
+            "points": {
+                "easy": 100,
+                "medium": 200,
+                "hard": 300
+            },
+            "streak_every": 3,
+            "streak_bonus": 100,
+            "max_streak_bonuses": 2
+        },
+        "rounds_total": 6,
+        "rounds_resolved": 0,
+        "score": 0,
+        "correct_count": 0,
+        "streak": 0,
+        "bonuses_awarded": 0,
+        "lifeline_available": true,
+        "round": {
+            "round_id": "demo_rnd_01",
+            "ordinal": 1,
+            "status": "answering",
+            "boxes": null,
+            "selected_box_id": "steady",
+            "auto_selected": false,
+            "question": {
+                "question_id": "demo_q_medium_01",
+                "category": "Science",
+                "difficulty": "medium",
+                "text": "DEMO: Which planet is known as the Red Planet?",
+                "options": [
+                    {
+                        "option_id": "demo_opt_m1",
+                        "text": "Venus"
+                    },
+                    {
+                        "option_id": "demo_opt_m2",
+                        "text": "Jupiter"
+                    },
+                    {
+                        "option_id": "demo_opt_m3",
+                        "text": "Mars"
+                    },
+                    {
+                        "option_id": "demo_opt_m4",
+                        "text": "Mercury"
+                    }
+                ],
+                "removed_option_ids": []
+            },
+            "answer_deadline": "2026-10-19T10:00:13.400Z"
+        },
+        "last_result": null,
+        "result": null
+    }
+}

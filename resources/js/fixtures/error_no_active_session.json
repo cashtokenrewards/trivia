@@ -1,0 +1,14 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Error example: no_active_session.",
+    "http_status": 404,
+    "response": {
+        "error": {
+            "code": "no_active_session",
+            "message": "No game in progress.",
+            "retryable": false,
+            "correlation_id": "demo-corr-0001"
+        },
+        "server_now": "2026-10-19T10:00:07.000Z"
+    }
+}

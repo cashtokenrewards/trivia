@@ -1,0 +1,17 @@
+{
+    "_demo": true,
+    "description": "DEMO DATA. Error example: stale_state_version.",
+    "http_status": 409,
+    "response": {
+        "error": {
+            "code": "stale_state_version",
+            "message": "Your screen is out of date.",
+            "retryable": false,
+            "correlation_id": "demo-corr-0001",
+            "details": {
+                "current_state_version": 7
+            }
+        },
+        "server_now": "2026-10-19T10:00:07.000Z"
+    }
+}

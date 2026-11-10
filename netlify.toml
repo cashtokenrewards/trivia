@@ -1,0 +1,26 @@
+# Hosts the static DEMO only (simulated game in the browser). Laravel is not used or needed.
+[build]
+  command = "npm run build:static"
+  publish = "dist-static"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# The page is one app: unknown paths open it, so /?arena=1 and refreshes always work.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "DENY"
+
+# Built files have content hashes in their names, so they can be cached for a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
